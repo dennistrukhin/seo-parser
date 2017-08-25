@@ -36,7 +36,16 @@ class LinksDetector
             }, $candidates);
             $candidates = array_unique($candidates);
 
-            $links = $candidates;
+            $candidates = array_filter($candidates, function (string $url) {
+                foreach ($this->filters as $filter) {
+                    if (!$filter->filter($url)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            $links = array_values($candidates);
         }
 
         return $links;

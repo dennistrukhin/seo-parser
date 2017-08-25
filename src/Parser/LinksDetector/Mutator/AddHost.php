@@ -16,7 +16,7 @@ class AddHost implements MutatorInterface
 
     public function mutate(string $url): string
     {
-        if (preg_match('#^/[^/]#', $url)) {
+        if (preg_match('#^/[^/]#', $url) || $url == '/') {
             $url = $this->host . $url;
         }
         return $url;

@@ -24,6 +24,7 @@ class Parser
         $this->host = $host;
         $client = new Client([
             'base_uri' => $this->host,
+            'verify' => false,
         ]);
         $this->pageRetriever = new PageRetriever($client);
         $this->seoDetector = new SeoDataDetector();
@@ -31,6 +32,9 @@ class Parser
         $this->linksDetector->addMutator(new LinksDetector\Mutator\StripHashAndParameters());
         $this->linksDetector->addMutator(new LinksDetector\Mutator\RemoveProtocol());
         $this->linksDetector->addMutator(new LinksDetector\Mutator\AddHost($this->host));
+        $this->linksDetector->addFilter(new LinksDetector\Filter\NonEmpty());
+        $this->linksDetector->addFilter(new LinksDetector\Filter\WithHost($this->host));
+        $this->linksDetector->addFilter(new LinksDetector\Filter\NonProduct());
     }
 
     /**
@@ -50,9 +54,21 @@ class Parser
     {
         foreach ($urls as $url) {
             $page = $this->pageRetriever->get($url);
-            $seoData = $this->seoDetector->get($page);
-            $links = $this->linksDetector->get($page);
-            var_dump($links);
+            echo $page->getCode() . ' ' . $url . PHP_EOL;
+            if ($page->getCode() === 200) {
+                $seoData = $this->seoDetector->get($page);
+                $this->visitedUrls[$url] = $seoData;
+                $links = $this->linksDetector->get($page);
+                $linksToVisit = [];
+                foreach ($links as $link) {
+                    if (!isset($this->visitedUrls[$link])) {
+                        $linksToVisit[] = $link;
+                    }
+                }
+                if (count($linksToVisit) > 0) {
+                    $this->iterate($linksToVisit);
+                }
+            }
         }
     }
 

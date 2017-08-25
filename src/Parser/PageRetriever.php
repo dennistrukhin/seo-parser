@@ -30,6 +30,11 @@ class PageRetriever
         } catch (ClientException | ServerException $e) {
             $code = $e->getResponse()->getStatusCode();
             $html = '';
+        } catch (RequestException $e) {
+            echo 'Request to ' . $e->getRequest()->getUri()->getScheme() . '://' . $e->getRequest()->getUri()->getHost() . $e->getRequest()->getUri()->getPath() . ' failed: '
+            . $e->getMessage();
+            $html = '';
+            $code = 0;
         }
         return new Page($url, $code, $html);
     }
