@@ -60,11 +60,14 @@ class Parser
         $linksToVisit = [];
         /** @var Page[] $pages */
         $pages = [];
+        $i = 0;
+        $total = count($urls);
         foreach ($urls as $url) {
+            ++$i;
             $this->visitedUrls[$url] = true;
             $page = $this->pageRetriever->get($url);
             $pages[] = $page;
-            echo $page->getCode() . ' ' . $url . PHP_EOL;
+            echo sprintf('%dMb (%d / %d) [%d] %s', memory_get_usage() >> 20, $i, $total, $page->getCode(), $url) . PHP_EOL;
         }
         foreach ($pages as $page) {
             if ($page->getCode() === 200) {
@@ -76,9 +79,11 @@ class Parser
                         $linksToVisit[] = $link;
                     }
                 }
+                unset($link);
             }
         }
         $this->output->flush();
+        unset($pages, $page, $i, $total, $seoData, $links);
         if (count($linksToVisit) > 0) {
             echo PHP_EOL, "Parsing links from ", implode(', ', $urls), PHP_EOL;
             $linksToVisit = array_values(array_unique($linksToVisit));
