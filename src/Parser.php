@@ -78,6 +78,7 @@ class Parser
                 }
             }
         }
+        $this->output->flush();
         if (count($linksToVisit) > 0) {
             echo PHP_EOL, "Parsing links from ", implode(', ', $urls), PHP_EOL;
             $linksToVisit = array_values(array_unique($linksToVisit));
